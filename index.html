@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe Game</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin: 2rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cell.X {
+            color: #ff6b6b;
+        }
+
+        .cell.O {
+            color: #4ecdc4;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .line {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(90deg, #4ecdc4, #ff6b6b);
+            transform-origin: left;
+            transition: all 0.3s ease;
+        }
+
+        /* Notifikasi */
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            display: none;
+            font-size: 2rem;
+            text-align: center;
+            animation: feedInOut 1.5s forwards;
+        }
+
+        @keyframes feedInOut {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        /* Icon Dadu dan Pengaturan */
+        .dice-btn, .settings-btn {
+            background: none;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            padding: 10px;
+            font-size: 1.5rem;
+            color: #fff;
+            cursor: pointer;
+            margin-left: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .dice-btn:hover, .settings-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Setting Panel */
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+            z-index: 9999; /* Pastikan panel pengaturan di atas elemen lainnya */
+        }
+
+        .settings-panel button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #ff6b6b;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid" id="grid">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="button-container">
+            <button class="button" id="resetButton">Reset Game</button>
+            <button class="dice-btn" id="diceButton"><i class="fas fa-dice"></i></button>
+            <button class="settings-btn" id="settingsButton"><i class="fas fa-cogs"></i></button>
+        </div>
+        <div class="notification" id="notification"></div>
+        <div class="settings-panel" id="settingsPanel">
+            <button id="toggleMusicBtn">Turn Music On</button>
+        </div>
+    </div>
+
+    <audio id="gameMusic" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-littleidea.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const cells = document.querySelectorAll('.cell');
+        const resetButton = document.getElementById('resetButton');
+        const notification = document.getElementById('notification');
+        const diceButton = document.getElementById('diceButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const toggleMusicBtn = document.getElementById('toggleMusicBtn');
+        const gameMusic = document.getElementById('gameMusic');
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let musicPlaying = false;
+
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function checkWin() {
+            for (const combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (
+                    cells[a].textContent === currentPlayer &&
+                    cells[b].textContent === currentPlayer &&
+                    cells[c].textContent === currentPlayer
+                ) {
+                    drawWinLine(combination);
+                    gameActive = false;
+                    setTimeout(() => showNotification(`${currentPlayer} wins!`), 200);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkDraw() {
+            return [...cells].every(cell => cell.textContent !== '') && !checkWin();
+        }
+
+        function drawWinLine(combination) {
+            const [start, , end] = combination;
+            const startCell = cells[start].getBoundingClientRect();
+            const endCell = cells[end].getBoundingClientRect();
+            const gridRect = grid.getBoundingClientRect();
+
+            const line = document.createElement('div');
+            line.classList.add('line');
+
+            const x1 = startCell.left + startCell.width / 2 - gridRect.left;
+            const y1 = startCell.top + startCell.height / 2 - gridRect.top;
+            const x2 = endCell.left + endCell.width / 2 - gridRect.left;
+            const y2 = endCell.top + endCell.height / 2 - gridRect.top;
+
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+            line.style.width = `${length}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+
+            grid.appendChild(line);
+        }
+
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 1500); // Notifikasi hilang setelah 1.5 detik
+        }
+
+        resetButton.addEventListener('click', () => {
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('X', 'O');
+            });
+            document.querySelectorAll('.line').forEach(line => line.remove());
+            currentPlayer = 'X';
+            gameActive = true;
+            showNotification('Game Reset!');
+        });
+
+        diceButton.addEventListener('click', () => {
+            const firstPlayer = Math.random() < 0.5 ? 'X' : 'O';
+            currentPlayer = firstPlayer;
+            showNotification(`${currentPlayer} will play first!`);
+        });
+
+        settingsButton.addEventListener('click', () => {
+            settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+        });
+
+        toggleMusicBtn.addEventListener('click', () => {
+            musicPlaying = !musicPlaying;
+            if (musicPlaying) {
+                gameMusic.play();
+                toggleMusicBtn.textContent = 'Turn Music Off';
+            } else {
+                gameMusic.pause();
+                toggleMusicBtn.textContent = 'Turn Music On';
+            }
+        });
+
+        grid.addEventListener('click', e => {
+            if (!gameActive) return;
+
+            const cell = e.target;
+            if (!cell.classList.contains('cell') || cell.textContent) return;
+
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer);
+
+            if (checkWin()) return;
+
+            if (checkDraw()) {
+                gameActive = false;
+                showNotification("Game Over: It's a Draw!");
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        });
+    </script>
+</body>
+</html>
